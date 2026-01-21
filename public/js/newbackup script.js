@@ -960,7 +960,7 @@ function createBlankPage() {
 
 
 
-function initFlipbook() {
+function initFlipbookfin() {
 
     const $fb = $("#flipbook");
     if (!$fb.length || $fb.data("turn")) return;
@@ -1061,6 +1061,41 @@ function initFlipbook() {
     if (isMobile) attachMobileEvents($fb);
 }
 
+function initFlipbook() {
+
+    const $fb = $("#flipbook");
+
+    if (!$fb.length) return;
+    if ($fb.data("turn")) return;
+
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    const PAGE_RATIO = 700 / 440;
+
+    let height = Math.floor(vh * 0.85);
+    let width = Math.floor(height / PAGE_RATIO);
+
+    if (width > vw * 0.9) {
+        width = Math.floor(vw * 0.9);
+        height = Math.floor(width * PAGE_RATIO);
+    }
+
+    $fb.turn({
+        width: width * 2,
+        height: height,
+        autoCenter: true,
+        display: "double",
+        duration: 800,
+        acceleration: true,
+        gradients: true,
+        elevation: 50
+    });
+}
+
+$(document).ready(function () {
+    setTimeout(initFlipbook, 300);
+});
 
 
 

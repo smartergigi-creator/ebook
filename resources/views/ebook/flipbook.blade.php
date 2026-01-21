@@ -1,67 +1,54 @@
 @extends('layout.app')
 
 @section('content')
-    {{-- 🔄 LOADING SCREEN --}}
-    <div id="ebookLoader">
-        <div class="loader-box">
-            <div class="spinner"></div>
-            <p>Loading ebook…</p>
-        </div>
+<body class="ebook-view">
+
+<a href="{{ route('ebooks.index') }}" class="ebook-back-btn">← Back</a>
+
+<div id="ebookLoader">
+    <div class="loader-box">
+        <div class="spinner"></div>
+        <p>Loading ebook…</p>
+    </div>
+</div>
+
+<div id="viewer-wrapper">
+
+    {{-- TOOLBAR --}}
+    <div class="viewer-toolbar">
+        <button id="zoomIn">+</button>
+        <button id="zoomOut">−</button>
+        <button id="zoomReset">⟳</button>
+        <button id="fullscreenToggle">⛶</button>
     </div>
 
+    {{-- FLIPBOOK --}}
+    <div id="flipbook">
 
-    <div class="container-fluid vh-0 d-flex flex-column">
-
-        {{-- 📘 EBOOK TITLE --}}
-        <div class="row">
-            <div class="col-12 text-start py-2">
-                <a href="{{ route('ebooks.index') }}" class="btn btn-dark back-btn">
-                    ← Back
-                </a>
-                <h2 class="title mb-0">{{ $ebook->title }}</h2>
+        {{-- COVER --}}
+        @if(isset($pages[0]))
+            <div class="page cover">
+                <img src="{{ $pages[0] }}">
             </div>
-        </div>
+        @endif
 
-        {{-- 📕 VIEWER AREA (RED BOX TARGET) --}}
-        <div class="row flex-grow-1">
-            <div class="col-12 d-flex justify-content-center align-items-center">
+        {{-- INNER PAGES --}}
+        @foreach($pages as $i => $img)
+            @if($i !== 0)
+                <div class="page">
+                    <img src="{{ $img }}">
+                </div>
+            @endif
+        @endforeach
 
-                {{-- VIEWER WRAPPER --}}
-                <div id="viewer-wrapper" class="mb-6" style="display:none;">
+    </div>
 
-                    {{-- 🔝 TOP TOOLBAR --}}
-                    <div class="viewer-toolbar position-absolute top-0 end-0 m-3">
-                        <button id="zoomIn">+</button>
-                        <button id="zoomOut">−</button>
-                        <button id="zoomReset">⟳</button>
-                        <button id="fullscreenToggle">⛶</button>
-                    </div>
-
-                    {{-- 🔑 ZOOM + FLIPBOOK --}}
-                    <div id="zoom-wrapper" class="position-relative">
-                        <div id="ebook-scale">
-                            {{-- FLIPBOOK --}}
-                            <div id="flipbook">
-
-                                {{-- ✅ COVER PAGE --}}
-                                @if (!empty($pages) && isset($pages[0]))
-                                    <div class="page cover">
-                                        <img src="{{ $pages[0] }}" alt="Cover">
-                                    </div>
-                                @endif
-
-                                {{-- ✅ INNER PAGES --}}
-                                @foreach ($pages as $index => $img)
-                                    @if ($index !== 0)
-                                        <div class="page">
-                                            <img src="{{ $img }}" alt="Page {{ $index + 1 }}">
-                                        </div>
-                                    @endif
-                                @endforeach
-
-                            </div>
-                        </div>
-                        {{-- ⬅️➡️ SIDE NAV --}}
+    {{-- PREV / NEXT --}}
+    {{-- <div class="ebook-side-nav">
+        <button id="prevPage" class="side-btn prev">◀</button>
+        <button id="nextPage" class="side-btn next">▶</button>
+    </div> --}}
+     {{-- ⬅️➡️ SIDE NAV --}}
                         <div class="ebook-side-nav">
                             <button class="side-btn prev" id="prevPage">
                                 <img src="{{ asset('images/back.png') }}" alt="Previous">
@@ -71,20 +58,14 @@
                                 <img src="{{ asset('images/share.png') }}" alt="Next">
                             </button>
                         </div>
+</div>
 
-                    </div>
-                </div>
+<audio id="flipSound" src="{{ asset('sound/pageflip.mp3') }}" preload="auto"></audio>
 
-            </div>
-        </div>
+{{-- REQUIRED --}}
+{{-- <link rel="stylesheet" href="{{ asset('css/ebook.css') }}">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="{{ asset('js/turn.min.js') }}"></script>
+<script src="{{ asset('js/ebook.js') }}"></script> --}}
 
-        {{-- 🔊 PAGE TURN SOUND --}}
-        <audio id="flipSound" src="{{ asset('sound/pageflip.mp3') }}" preload="auto"></audio>
-
-    </div>
-
-    {{-- ✅ REQUIRED JS --}}
-    {{-- <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="{{ asset('js/turn.min.js') }}"></cript>
-<script src="{{ asset('js/script.js') }}"></script> --}}
 @endsection

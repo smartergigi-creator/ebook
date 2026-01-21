@@ -626,37 +626,3 @@ body.ebook-view .container-fluid {
 .ebook-back-btn:hover {
     background: #333;
 }
-.ebook-side-nav {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 10001;
-}
-
-.side-btn {
-    position: absolute;
-    top: 90%;
-    transform: translateY(-50%);
-    pointer-events: auto;
-   
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-
-    background: rgba(0,0,0,0.65);
-    color: #fff;
-    border: none;
-    font-size: 22px;
-    cursor: pointer;
-}
-
-.side-btn.prev {
-    left: 16px;
-}
-
-.side-btn.next {
-    right: 16px;
-}
-.side-btn img {
-        width: 30px;
-    }
