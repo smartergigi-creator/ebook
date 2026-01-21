@@ -12,20 +12,29 @@ class EbookController extends Controller
     /* ======================================================
        1. LIST ALL EBOOKS
     ====================================================== */
-   public function index()
-{
-    $ebooks = Ebook::latest()
-        ->get()
-        ->groupBy('title'); // 👈 GROUP BY MANUAL EBOOK NAME
+//    public function index()
+// {
+//     $ebooks = Ebook::latest()
+//         ->get()
+//         ->groupBy('title'); // 👈 GROUP BY MANUAL EBOOK NAME
 
-    return view('ebook.index', compact('ebooks'));
+//     return view('ebook.index', compact('ebooks'));
+// }
+
+public function index()
+{
+    $ebooks = Ebook::latest()->paginate(20);
+
+    $groupedEbooks = $ebooks->getCollection()->groupBy('title');
+
+    return view('ebook.index', compact('ebooks', 'groupedEbooks'));
 }
 
 
     /* ======================================================
        2. UPLOAD PDF(s)
     ====================================================== */
-    public function store(Request $request)
+    public function store1(Request $request)
     {
         $request->validate([
             'ebook_name' => 'required|string|max:255',
@@ -80,6 +89,72 @@ class EbookController extends Controller
             $created ? "$created ebook(s) created successfully." : 'No valid PDF files found.'
         );
     }
+    public function store(Request $request)
+{
+    $request->validate([
+        'ebook_name' => 'required|string|max:255',
+        'pdfs'       => 'required|array|min:1',
+        'pdfs.*'     => 'required|file|max:51200', // 50MB
+    ]);
+
+    if (!$request->hasFile('pdfs')) {
+        return back()->with('error', 'No PDF files uploaded.');
+    }
+
+    $files = $request->file('pdfs');
+    if (!is_array($files)) {
+        $files = [$files];
+    }
+
+    usort($files, fn ($a, $b) =>
+        strcmp($a->getClientOriginalName(), $b->getClientOriginalName())
+    );
+
+    $created = 0;
+    $failed  = 0;
+    $manualTitle = $request->ebook_name;
+
+    foreach ($files as $file) {
+
+        if (!$file->isValid()) {
+            $failed++;
+            continue;
+        }
+
+        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $safeTitle    = Str::title(str_replace('_', ' ', $originalName));
+
+        $folder = Str::slug($originalName) . '_' . time() . '_' . Str::random(4);
+        $basePath = public_path("ebooks/$folder");
+
+        File::makeDirectory($basePath, 0777, true);
+
+        $pdfName = Str::slug($originalName) . '.pdf';
+        $file->move($basePath, $pdfName);
+
+        Ebook::create([
+            'title'       => $manualTitle,
+            'file_title'  => $safeTitle,
+            'pdf_path'    => "ebooks/$folder/$pdfName",
+            'folder_path' => $folder,
+            'page_count'  => 0,
+            'uploaded_by' => auth()->id() ?? 1,
+        ]);
+
+        $created++;
+    }
+
+    if ($created === 0) {
+        return back()->with('error', 'All uploaded files are invalid or corrupted.');
+    }
+
+    return back()->with(
+        'success',
+        "$created ebook(s) uploaded successfully." .
+        ($failed ? " $failed file(s) skipped." : '')
+    );
+}
+
 // public function store(Request $request)
 // {
 //     $request->validate([

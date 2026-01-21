@@ -11,7 +11,7 @@ let audioUnlocked = false;
 document.addEventListener("DOMContentLoaded", () => {
     initFileUpload();
     setupAudioUnlock();
-    waitForImagesThenInit();
+    // waitForImagesThenInit();
 });
 
 /* =====================================
@@ -100,546 +100,546 @@ function playFlipSound() {
 /* =====================================
    WAIT FOR IMAGES
 ===================================== */
-function waitForImagesThenInit() {
+// function waitForImagesThenInit() {
 
-    const flipbookEl = document.getElementById("flipbook");
-    if (!flipbookEl) return;
+//     const flipbookEl = document.getElementById("flipbook");
+//     if (!flipbookEl) return;
 
-    const images = flipbookEl.querySelectorAll("img");
-    if (!images.length) return;
+//     const images = flipbookEl.querySelectorAll("img");
+//     if (!images.length) return;
 
-    let loaded = 0;
-    images.forEach(img => {
-        if (img.complete) loaded++;
-        else img.onload = img.onerror = () => {
-            loaded++;
-            if (loaded === images.length) initFlipbook();
-        };
-    });
+//     let loaded = 0;
+//     images.forEach(img => {
+//         if (img.complete) loaded++;
+//         else img.onload = img.onerror = () => {
+//             loaded++;
+//             if (loaded === images.length) initFlipbook();
+//         };
+//     });
 
-    if (loaded === images.length) initFlipbook();
-}
+//     if (loaded === images.length) initFlipbook();
+// }
 
 /* =====================================
    INIT FLIPBOOK
 ===================================== */
-// function initFlipbook() {
+function initFlipbook2() {
 
-//     const flipbook = $("#flipbook");
-//     if (!flipbook.length || flipbook.data("turn")) return;
+    const flipbook = $("#flipbook");
+    if (!flipbook.length || flipbook.data("turn")) return;
 
-//     const w = window.innerWidth;
-//     const h = window.innerHeight;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
 
-//     const isMobile = w <= 900;
-//     const isLandscape = w > h;
+    const isMobile = w <= 900;
+    const isLandscape = w > h;
 
-//     const PAGE_RATIO = 700 / 440;
+    const PAGE_RATIO = 700 / 440;
 
-//     let width, height, display;
+    let width, height, display;
 
-//     /* 📱 MOBILE PORTRAIT → SINGLE */
-//     if (isMobile && !isLandscape) {
-//         display = "single";
-//         // height  = Math.min(h - 60, 600);
-//         // height  = Math.floor(h * 0.9);   // 90% screen
+    /* 📱 MOBILE PORTRAIT → SINGLE */
+    if (isMobile && !isLandscape) {
+        display = "single";
+        // height  = Math.min(h - 60, 600);
+        // height  = Math.floor(h * 0.9);   // 90% screen
 
-//         // width   = Math.floor(height / PAGE_RATIO);
+        // width   = Math.floor(height / PAGE_RATIO);
 
-//         height = Math.floor(h * 0.9);
-// width  = Math.floor((height / PAGE_RATIO) * 1.05); // 🔼 5% wider
+        height = Math.floor(h * 0.9);
+width  = Math.floor((height / PAGE_RATIO) * 1.05); // 🔼 5% wider
 
-//     }
+    }
 
-//     /* 📱 MOBILE LANDSCAPE → START WITH DOUBLE */
-//   else if (isMobile && isLandscape) {
+    /* 📱 MOBILE LANDSCAPE → START WITH DOUBLE */
+  else if (isMobile && isLandscape) {
 
-//     display = "double";
+    display = "double";
 
-//     height = Math.floor(h * 0.95);  // full height feel
-//     // width  = Math.floor((height / PAGE_RATIO) * 2 * 1.15); // 🔥 wider
-//     width = Math.floor((height / PAGE_RATIO) * 2 * 1.28);
+    height = Math.floor(h * 0.95);  // full height feel
+    // width  = Math.floor((height / PAGE_RATIO) * 2 * 1.15); // 🔥 wider
+    width = Math.floor((height / PAGE_RATIO) * 2 * 1.28);
 
-// }
+}
 
 
 
 
 
-//     /* 💻 DESKTOP → OLD BEHAVIOUR */
-//     else {
-//         display = "single";
-//         width  = 440;
-//         height = 560;
-//     }
+    /* 💻 DESKTOP → OLD BEHAVIOUR */
+    else {
+        display = "single";
+        width  = 440;
+        height = 560;
+    }
 
-//     flipbook.turn({
-//         width,
-//         height,
-//         display,
-//         autoCenter: false,
-//         page: 1,
-//         gradients: true,
-//         acceleration: true
-//     });
+    flipbook.turn({
+        width,
+        height,
+        display,
+        autoCenter: false,
+        page: 1,
+        gradients: true,
+        acceleration: true
+    });
 
-//     // ✅ FIX INITIAL WHITE PAGE ON LOAD (MOBILE)
-// if (isMobile) {
-//     setTimeout(() => {
+    // ✅ FIX INITIAL WHITE PAGE ON LOAD (MOBILE)
+if (isMobile) {
+    setTimeout(() => {
 
-//         const totalPages = flipbook.turn("pages");
+        const totalPages = flipbook.turn("pages");
 
-//         // Always start with CLOSED single page
-//         flipbook.turn("display", "single");
+        // Always start with CLOSED single page
+        flipbook.turn("display", "single");
 
-//         // Resize to single page size
-//         flipbook.turn(
-//             "size",
-//             Math.floor(height / PAGE_RATIO),
-//             height
-//         );
+        // Resize to single page size
+        flipbook.turn(
+            "size",
+            Math.floor(height / PAGE_RATIO),
+            height
+        );
 
-//         // Force page 1 again
-//         flipbook.turn("page", 1);
+        // Force page 1 again
+        flipbook.turn("page", 1);
 
-//         updateSideNavButtons();
+        updateSideNavButtons();
 
-//     }, 60); // ⏱ small delay = IMPORTANT
-// }
+    }, 60); // ⏱ small delay = IMPORTANT
+}
 
 
-//     /* 🔊 SOUND + PAGE NUMBER */
-//     const pageEl = document.getElementById("currentPage");
-//     const BLANK_OFFSET = 1;
+    /* 🔊 SOUND + PAGE NUMBER */
+    const pageEl = document.getElementById("currentPage");
+    const BLANK_OFFSET = 1;
 
-//     flipbook.off("turned").on("turned", function (e, page) {
-//         playFlipSound();
+    flipbook.off("turned").on("turned", function (e, page) {
+        playFlipSound();
 
-//         if (!pageEl) return;
+        if (!pageEl) return;
 
-//         const totalPages = flipbook.turn("pages");
-//         const d = flipbook.turn("display");
+        const totalPages = flipbook.turn("pages");
+        const d = flipbook.turn("display");
 
-//         if (d === "single") {
-//             pageEl.textContent = `Page ${Math.max(1, page - BLANK_OFFSET)}`;
-//         } else {
-//             let left = page - BLANK_OFFSET;
-//             let right = Math.min(left + 1, totalPages - BLANK_OFFSET);
-//             pageEl.textContent = `Page ${left} – ${right}`;
-//         }
-
-//         // updateSideNavButtons();
-//     });
-
-//     /* 🔥 FIX WHITE PAGE (FIRST / LAST) + NAV ISSUE */
-//     if (isMobile && isLandscape) {
-
-//         let resizing = false;
+        if (d === "single") {
+            pageEl.textContent = `Page ${Math.max(1, page - BLANK_OFFSET)}`;
+        } else {
+            let left = page - BLANK_OFFSET;
+            let right = Math.min(left + 1, totalPages - BLANK_OFFSET);
+            pageEl.textContent = `Page ${left} – ${right}`;
+        }
+
+        // updateSideNavButtons();
+    });
+
+    /* 🔥 FIX WHITE PAGE (FIRST / LAST) + NAV ISSUE */
+    if (isMobile && isLandscape) {
+
+        let resizing = false;
 
-//         flipbook.on("turning", function (e, page) {
+        flipbook.on("turning", function (e, page) {
 
-//             if (resizing) {
-//                 e.preventDefault();
-//                 // return false;
-//                 return ;
-//             }
+            if (resizing) {
+                e.preventDefault();
+                // return false;
+                return ;
+            }
 
-//             const totalPages = flipbook.turn("pages");
-
-//             // FIRST PAGE → SINGLE
-//             if (page === 1) {
-//                 resizing = true;
+            const totalPages = flipbook.turn("pages");
+
+            // FIRST PAGE → SINGLE
+            if (page === 1) {
+                resizing = true;
 
-//                 flipbook.turn("display", "single");
-//                 flipbook.turn(
-//                     "size",
-//                     Math.floor(height / PAGE_RATIO),
-//                     height
-//                 );
+                flipbook.turn("display", "single");
+                flipbook.turn(
+                    "size",
+                    Math.floor(height / PAGE_RATIO),
+                    height
+                );
 
-//                 setTimeout(() => {
-//                     resizing = false;
-//                     flipbook.turn("page", 1);
-//                 }, 60);
+                setTimeout(() => {
+                    resizing = false;
+                    flipbook.turn("page", 1);
+                }, 60);
 
-//                 return false;
-//             }
-
-//             // LAST PAGE → SINGLE
-//             if (page === totalPages) {
-//                 resizing = true;
-
-//                 flipbook.turn("display", "single");
-//                 flipbook.turn(
-//                     "size",
-//                     Math.floor(height / PAGE_RATIO),
-//                     height
-//                 );
-
-//                 setTimeout(() => {
-//                     resizing = false;
-//                     flipbook.turn("page", totalPages);
-//                 }, 60);
-
-//                 return false;
-//             }
-
-//             // MIDDLE PAGES → DOUBLE
-//             if (flipbook.turn("display") !== "double") {
-//                 resizing = true;
-
-//                 flipbook.turn("display", "double");
-//                 flipbook.turn(
-//                     "size",
-//                     Math.floor((height / PAGE_RATIO) * 2),
-//                     height
-//                 );
-
-//                 setTimeout(() => {
-//                     resizing = false;
-//                     flipbook.turn("page", page);
-//                 }, 60);
-
-//                 return false;
-//             }
-//         });
-//     }
-
-//     /* EVENTS */
-//     if (isMobile) {
-//         attachMobileEvents(flipbook);
-//         attachMobileNavButtons(flipbook);
-//     } else {
-//         attachDesktopEvents(flipbook);
-//     }
-
-//     // updateSideNavButtons();
-// }
-
-// function initFlipbook() {
-
-//     const flipbook = $("#flipbook");
-//     if (!flipbook.length || flipbook.data("turn")) return;
-
-//     const vw = window.innerWidth;
-//     const vh = window.innerHeight;
-
-//     const PAGE_RATIO = 700 / 440; // height / width
-
-//     const isMobile  = vw <= 768;
-
-//     let singleWidth, singleHeight;
-//     let doubleWidth, doubleHeight;
-
-//     /* =========================
-//        SIZE CALCULATION
-//     ========================= */
-
-//     if (isMobile) {
-
-//         // 📱 MOBILE → HEIGHT BASED
-//         singleHeight = Math.floor(vh * 0.88);
-//         singleWidth  = Math.floor(singleHeight / PAGE_RATIO);
-
-//         if (singleWidth > vw * 0.95) {
-//             singleWidth  = Math.floor(vw * 0.95);
-//             singleHeight = Math.floor(singleWidth * PAGE_RATIO);
-//         }
-
-//         doubleWidth  = singleWidth * 2;
-//         doubleHeight = singleHeight;
-
-//     } else {
-
-//         // 💻 DESKTOP → WIDTH BASED (KEY FIX 🔥)
-//         doubleWidth  = Math.floor(vw * 0.78);
-//         singleWidth  = Math.floor(doubleWidth / 2);
-
-//         singleHeight = Math.floor(singleWidth * PAGE_RATIO);
-//         doubleHeight = singleHeight;
-
-//         // Prevent vertical overflow
-//         if (singleHeight > vh * 0.85) {
-//             singleHeight = Math.floor(vh * 0.85);
-//             singleWidth  = Math.floor(singleHeight / PAGE_RATIO);
-//             doubleWidth  = singleWidth * 2;
-//             doubleHeight = singleHeight;
-//         }
-//     }
-
-//     /* =========================
-//        INIT TURN.JS
-//     ========================= */
-//     flipbook.turn({
-//         width: singleWidth,
-//         height: singleHeight,
-//         display: "single",
-//         autoCenter: true,
-//         page: 1,
-//         gradients: true,
-//         acceleration: true
-//     });
-
-//     /* =========================
-//        LOAD STABILIZER
-//     ========================= */
-//     requestAnimationFrame(() => {
-//         flipbook.turn("size", singleWidth, singleHeight);
-//         flipbook.turn("display", "single");
-//         flipbook.turn("page", 1);
-//         flipbook.turn("center");
-//         updateSideNavButtons();
-//     });
-
-//     /* =========================
-//        DESKTOP OPEN / CLOSE
-//     ========================= */
-//     if (!isMobile) {
-
-//     let isOpen = false;
-//     let resizing = false;
-
-//     flipbook.off("turning").on("turning", function (e, page) {
-
-//         const totalPages = flipbook.turn("pages");
-
-//         // 🔒 First page → single
-//         if (page === 1 && isOpen) {
-//             e.preventDefault();
-//             resizing = true;
-
-//             flipbook.turn("display", "single");
-
-//             setTimeout(() => {
-//                 flipbook.turn("size", singleWidth, singleHeight);
-//                 flipbook.turn("page", 1);
-//                 isOpen = false;
-//                 resizing = false;
-//             }, 80);
-
-//             return false;
-//         }
-
-//         // 🔒 Last page → single
-//         if (page === totalPages && isOpen) {
-//             e.preventDefault();
-//             resizing = true;
-
-//             flipbook.turn("display", "single");
-
-//             setTimeout(() => {
-//                 flipbook.turn("size", singleWidth, singleHeight);
-//                 flipbook.turn("page", totalPages);
-//                 isOpen = false;
-//                 resizing = false;
-//             }, 80);
-
-//             return false;
-//         }
-
-//         // 🔓 First open → double (ONLY ONCE)
-//         if (!isOpen && page > 1) {
-//             e.preventDefault();
-//             resizing = true;
-
-//             flipbook.turn("display", "double");
-
-//             setTimeout(() => {
-//                 flipbook.turn("size", doubleWidth, doubleHeight);
-//                 flipbook.turn("page", page);
-//                 isOpen = true;
-//                 resizing = false;
-//             }, 80);
-
-//             return false;
-//         }
-
-//     });
-// }
-
-
-//     /* =========================
-//        EVENTS
-//     ========================= */
-//     if (isMobile) {
-//         attachMobileEvents(flipbook);
-//         attachMobileNavButtons(flipbook);
-//     } else {
-//         attachDesktopEvents(flipbook);
-//     }
-
-//     updateSideNavButtons();
-// }
-
-// function initFlipbook() {
-
-//     const flipbook = $("#flipbook");
-//     if (!flipbook.length || flipbook.data("turn")) return;
-
-//     const vw = window.innerWidth;
-//     const vh = window.innerHeight;
-
-//     const PAGE_RATIO = 700 / 440; // height / width
-//     const isMobile = vw <= 900;
-
-//     let singleWidth, singleHeight;
-//     let doubleWidth, doubleHeight;
-
-//     /* =================================================
-//        SIZE CALCULATION (STABLE)
-//     ================================================= */
-
-//     if (isMobile) {
-//         // 📱 MOBILE → HEIGHT BASED
-//         singleHeight = Math.floor(vh * 0.9);
-//         singleWidth  = Math.floor(singleHeight / PAGE_RATIO);
-
-//         if (singleWidth > vw * 0.95) {
-//             singleWidth  = Math.floor(vw * 0.95);
-//             singleHeight = Math.floor(singleWidth * PAGE_RATIO);
-//         }
-
-//         doubleWidth  = singleWidth * 2;
-//         doubleHeight = singleHeight;
-
-//     } else {
-//         // 💻 DESKTOP → WIDTH BASED (NO JUMP 🔥)
-//         doubleWidth  = Math.floor(vw * 0.78);
-//         singleWidth  = Math.floor(doubleWidth / 2);
-
-//         singleHeight = Math.floor(singleWidth * PAGE_RATIO);
-//         doubleHeight = singleHeight;
-
-//         // Prevent vertical overflow
-//         if (singleHeight > vh * 0.85) {
-//             singleHeight = Math.floor(vh * 0.85);
-//             singleWidth  = Math.floor(singleHeight / PAGE_RATIO);
-//             doubleWidth  = singleWidth * 2;
-//             doubleHeight = singleHeight;
-//         }
-//     }
-
-//     /* =================================================
-//        INIT TURN.JS (ALWAYS START SINGLE)
-//     ================================================= */
-//     flipbook.turn({
-//         width: singleWidth,
-//         height: singleHeight,
-//         display: "single",
-//         autoCenter: true,
-//         page: 1,
-//         gradients: true,
-//         acceleration: true
-//     });
-
-//     /* =================================================
-//        LOAD STABILIZER (VERY IMPORTANT)
-//     ================================================= */
-//     requestAnimationFrame(() => {
-//         requestAnimationFrame(() => {
-//             flipbook.turn("size", singleWidth, singleHeight);
-//             flipbook.turn("display", "single");
-//             flipbook.turn("page", 1);
-//             flipbook.turn("center");
-//             updateSideNavButtons();
-//         });
-//     });
-
-//     /* =================================================
-//        PAGE TURN + SOUND
-//     ================================================= */
-//     flipbook.off("turned").on("turned", function () {
-//         playFlipSound();
-//         updateSideNavButtons();
-//     });
-
-//     /* =================================================
-//        DESKTOP OPEN / CLOSE LOGIC
-//     ================================================= */
-//     if (!isMobile) {
-
-//         let isOpen = false;
-//         let resizing = false;
-
-//         flipbook.off("turning").on("turning", function (e, page) {
-
-//             if (resizing) {
-//                 e.preventDefault();
-//                 return false;
-//             }
-
-//             const totalPages = flipbook.turn("pages");
-
-//             // 🔒 FIRST PAGE → SINGLE
-//             if (page === 1 && isOpen) {
-//                 e.preventDefault();
-//                 resizing = true;
-
-//                 flipbook.turn("display", "single");
-
-//                 setTimeout(() => {
-//                     flipbook.turn("size", singleWidth, singleHeight);
-//                     flipbook.turn("page", 1);
-//                     isOpen = false;
-//                     resizing = false;
-//                     updateSideNavButtons();
-//                 }, 80);
-
-//                 return false;
-//             }
-
-//             // 🔒 LAST PAGE → SINGLE
-//             if (page === totalPages && isOpen) {
-//                 e.preventDefault();
-//                 resizing = true;
-
-//                 flipbook.turn("display", "single");
-
-//                 setTimeout(() => {
-//                     flipbook.turn("size", singleWidth, singleHeight);
-//                     flipbook.turn("page", totalPages);
-//                     isOpen = false;
-//                     resizing = false;
-//                     updateSideNavButtons();
-//                 }, 80);
-
-//                 return false;
-//             }
-
-//             // 🔓 OPEN BOOK → DOUBLE (ONLY ONCE)
-//             if (!isOpen && page > 1) {
-//                 e.preventDefault();
-//                 resizing = true;
-
-//                 flipbook.turn("display", "double");
-
-//                 setTimeout(() => {
-//                     flipbook.turn("size", doubleWidth, doubleHeight);
-//                     flipbook.turn("page", page);
-//                     isOpen = true;
-//                     resizing = false;
-//                     updateSideNavButtons();
-//                 }, 80);
-
-//                 return false;
-//             }
-//         });
-//     }
-
-//     /* =================================================
-//        EVENTS
-//     ================================================= */
-//     if (isMobile) {
-//         attachMobileEvents(flipbook);
-//         attachMobileNavButtons(flipbook);
-//     } else {
-//         attachDesktopEvents(flipbook);
-//     }
-
-//     updateSideNavButtons();
-// }
-
-function initFlipbook() {
+                return false;
+            }
+
+            // LAST PAGE → SINGLE
+            if (page === totalPages) {
+                resizing = true;
+
+                flipbook.turn("display", "single");
+                flipbook.turn(
+                    "size",
+                    Math.floor(height / PAGE_RATIO),
+                    height
+                );
+
+                setTimeout(() => {
+                    resizing = false;
+                    flipbook.turn("page", totalPages);
+                }, 60);
+
+                return false;
+            }
+
+            // MIDDLE PAGES → DOUBLE
+            if (flipbook.turn("display") !== "double") {
+                resizing = true;
+
+                flipbook.turn("display", "double");
+                flipbook.turn(
+                    "size",
+                    Math.floor((height / PAGE_RATIO) * 2),
+                    height
+                );
+
+                setTimeout(() => {
+                    resizing = false;
+                    flipbook.turn("page", page);
+                }, 60);
+
+                return false;
+            }
+        });
+    }
+
+    /* EVENTS */
+    if (isMobile) {
+        attachMobileEvents(flipbook);
+        attachMobileNavButtons(flipbook);
+    } else {
+        attachDesktopEvents(flipbook);
+    }
+
+    // updateSideNavButtons();
+}
+
+function initFlipbook3() {
+
+    const flipbook = $("#flipbook");
+    if (!flipbook.length || flipbook.data("turn")) return;
+
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    const PAGE_RATIO = 700 / 440; // height / width
+
+    const isMobile  = vw <= 768;
+
+    let singleWidth, singleHeight;
+    let doubleWidth, doubleHeight;
+
+    /* =========================
+       SIZE CALCULATION
+    ========================= */
+
+    if (isMobile) {
+
+        // 📱 MOBILE → HEIGHT BASED
+        singleHeight = Math.floor(vh * 0.88);
+        singleWidth  = Math.floor(singleHeight / PAGE_RATIO);
+
+        if (singleWidth > vw * 0.95) {
+            singleWidth  = Math.floor(vw * 0.95);
+            singleHeight = Math.floor(singleWidth * PAGE_RATIO);
+        }
+
+        doubleWidth  = singleWidth * 2;
+        doubleHeight = singleHeight;
+
+    } else {
+
+        // 💻 DESKTOP → WIDTH BASED (KEY FIX 🔥)
+        doubleWidth  = Math.floor(vw * 0.78);
+        singleWidth  = Math.floor(doubleWidth / 2);
+
+        singleHeight = Math.floor(singleWidth * PAGE_RATIO);
+        doubleHeight = singleHeight;
+
+        // Prevent vertical overflow
+        if (singleHeight > vh * 0.85) {
+            singleHeight = Math.floor(vh * 0.85);
+            singleWidth  = Math.floor(singleHeight / PAGE_RATIO);
+            doubleWidth  = singleWidth * 2;
+            doubleHeight = singleHeight;
+        }
+    }
+
+    /* =========================
+       INIT TURN.JS
+    ========================= */
+    flipbook.turn({
+        width: singleWidth,
+        height: singleHeight,
+        display: "single",
+        autoCenter: true,
+        page: 1,
+        gradients: true,
+        acceleration: true
+    });
+
+    /* =========================
+       LOAD STABILIZER
+    ========================= */
+    requestAnimationFrame(() => {
+        flipbook.turn("size", singleWidth, singleHeight);
+        flipbook.turn("display", "single");
+        flipbook.turn("page", 1);
+        flipbook.turn("center");
+        updateSideNavButtons();
+    });
+
+    /* =========================
+       DESKTOP OPEN / CLOSE
+    ========================= */
+    if (!isMobile) {
+
+    let isOpen = false;
+    let resizing = false;
+
+    flipbook.off("turning").on("turning", function (e, page) {
+
+        const totalPages = flipbook.turn("pages");
+
+        // 🔒 First page → single
+        if (page === 1 && isOpen) {
+            e.preventDefault();
+            resizing = true;
+
+            flipbook.turn("display", "single");
+
+            setTimeout(() => {
+                flipbook.turn("size", singleWidth, singleHeight);
+                flipbook.turn("page", 1);
+                isOpen = false;
+                resizing = false;
+            }, 80);
+
+            return false;
+        }
+
+        // 🔒 Last page → single
+        if (page === totalPages && isOpen) {
+            e.preventDefault();
+            resizing = true;
+
+            flipbook.turn("display", "single");
+
+            setTimeout(() => {
+                flipbook.turn("size", singleWidth, singleHeight);
+                flipbook.turn("page", totalPages);
+                isOpen = false;
+                resizing = false;
+            }, 80);
+
+            return false;
+        }
+
+        // 🔓 First open → double (ONLY ONCE)
+        if (!isOpen && page > 1) {
+            e.preventDefault();
+            resizing = true;
+
+            flipbook.turn("display", "double");
+
+            setTimeout(() => {
+                flipbook.turn("size", doubleWidth, doubleHeight);
+                flipbook.turn("page", page);
+                isOpen = true;
+                resizing = false;
+            }, 80);
+
+            return false;
+        }
+
+    });
+}
+
+
+    /* =========================
+       EVENTS
+    ========================= */
+    if (isMobile) {
+        attachMobileEvents(flipbook);
+        attachMobileNavButtons(flipbook);
+    } else {
+        attachDesktopEvents(flipbook);
+    }
+
+    updateSideNavButtons();
+}
+
+function initFlipbook4() {
+
+    const flipbook = $("#flipbook");
+    if (!flipbook.length || flipbook.data("turn")) return;
+
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    const PAGE_RATIO = 700 / 440; // height / width
+    const isMobile = vw <= 900;
+
+    let singleWidth, singleHeight;
+    let doubleWidth, doubleHeight;
+
+    /* =================================================
+       SIZE CALCULATION (STABLE)
+    ================================================= */
+
+    if (isMobile) {
+        // 📱 MOBILE → HEIGHT BASED
+        singleHeight = Math.floor(vh * 0.9);
+        singleWidth  = Math.floor(singleHeight / PAGE_RATIO);
+
+        if (singleWidth > vw * 0.95) {
+            singleWidth  = Math.floor(vw * 0.95);
+            singleHeight = Math.floor(singleWidth * PAGE_RATIO);
+        }
+
+        doubleWidth  = singleWidth * 2;
+        doubleHeight = singleHeight;
+
+    } else {
+        // 💻 DESKTOP → WIDTH BASED (NO JUMP 🔥)
+        doubleWidth  = Math.floor(vw * 0.78);
+        singleWidth  = Math.floor(doubleWidth / 2);
+
+        singleHeight = Math.floor(singleWidth * PAGE_RATIO);
+        doubleHeight = singleHeight;
+
+        // Prevent vertical overflow
+        if (singleHeight > vh * 0.85) {
+            singleHeight = Math.floor(vh * 0.85);
+            singleWidth  = Math.floor(singleHeight / PAGE_RATIO);
+            doubleWidth  = singleWidth * 2;
+            doubleHeight = singleHeight;
+        }
+    }
+
+    /* =================================================
+       INIT TURN.JS (ALWAYS START SINGLE)
+    ================================================= */
+    flipbook.turn({
+        width: singleWidth,
+        height: singleHeight,
+        display: "single",
+        autoCenter: true,
+        page: 1,
+        gradients: true,
+        acceleration: true
+    });
+
+    /* =================================================
+       LOAD STABILIZER (VERY IMPORTANT)
+    ================================================= */
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            flipbook.turn("size", singleWidth, singleHeight);
+            flipbook.turn("display", "single");
+            flipbook.turn("page", 1);
+            flipbook.turn("center");
+            updateSideNavButtons();
+        });
+    });
+
+    /* =================================================
+       PAGE TURN + SOUND
+    ================================================= */
+    flipbook.off("turned").on("turned", function () {
+        playFlipSound();
+        updateSideNavButtons();
+    });
+
+    /* =================================================
+       DESKTOP OPEN / CLOSE LOGIC
+    ================================================= */
+    if (!isMobile) {
+
+        let isOpen = false;
+        let resizing = false;
+
+        flipbook.off("turning").on("turning", function (e, page) {
+
+            if (resizing) {
+                e.preventDefault();
+                return false;
+            }
+
+            const totalPages = flipbook.turn("pages");
+
+            // 🔒 FIRST PAGE → SINGLE
+            if (page === 1 && isOpen) {
+                e.preventDefault();
+                resizing = true;
+
+                flipbook.turn("display", "single");
+
+                setTimeout(() => {
+                    flipbook.turn("size", singleWidth, singleHeight);
+                    flipbook.turn("page", 1);
+                    isOpen = false;
+                    resizing = false;
+                    updateSideNavButtons();
+                }, 80);
+
+                return false;
+            }
+
+            // 🔒 LAST PAGE → SINGLE
+            if (page === totalPages && isOpen) {
+                e.preventDefault();
+                resizing = true;
+
+                flipbook.turn("display", "single");
+
+                setTimeout(() => {
+                    flipbook.turn("size", singleWidth, singleHeight);
+                    flipbook.turn("page", totalPages);
+                    isOpen = false;
+                    resizing = false;
+                    updateSideNavButtons();
+                }, 80);
+
+                return false;
+            }
+
+            // 🔓 OPEN BOOK → DOUBLE (ONLY ONCE)
+            if (!isOpen && page > 1) {
+                e.preventDefault();
+                resizing = true;
+
+                flipbook.turn("display", "double");
+
+                setTimeout(() => {
+                    flipbook.turn("size", doubleWidth, doubleHeight);
+                    flipbook.turn("page", page);
+                    isOpen = true;
+                    resizing = false;
+                    updateSideNavButtons();
+                }, 80);
+
+                return false;
+            }
+        });
+    }
+
+    /* =================================================
+       EVENTS
+    ================================================= */
+    if (isMobile) {
+        attachMobileEvents(flipbook);
+        attachMobileNavButtons(flipbook);
+    } else {
+        attachDesktopEvents(flipbook);
+    }
+
+    updateSideNavButtons();
+}
+
+function initFlipbook5() {
 
     const flipbook = $("#flipbook");
     if (!flipbook.length || flipbook.data("turn")) return;
@@ -710,7 +710,7 @@ function initFlipbook() {
         flipbook.turn("size", singleWidth, singleHeight);
         flipbook.turn("page", 1);
         flipbook.turn("center");
-        updateSideNavButtons();
+        // updateSideNavButtons();
     }, 80);
 
     /* =========================
@@ -805,11 +805,273 @@ function initFlipbook() {
         attachDesktopEvents(flipbook);
     }
 
-    updateSideNavButtons();
+    // updateSideNavButtons();
+}
+function normalizePages() {
+
+    const $fb = $("#flipbook");
+    let pages = $fb.children(".page").length;
+
+    // Always make total EVEN + last page safe
+    if (pages % 2 !== 0) {
+        $fb.append(createBlankPage());
+        pages++;
+    }
+
+    // Add ONE extra blank for last single page
+    $fb.append(createBlankPage());
+}
+
+function createBlankPage() {
+    return `
+        <div class="page blank">
+            <div style="
+                width:100%;
+                height:100%;
+                background:#fff;
+            "></div>
+        </div>
+    `;
 }
 
 
 
+function initFlipbook() {
+
+    const $fb = $("#flipbook");
+    if (!$fb.length || $fb.data("turn")) return;
+
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    const PAGE_RATIO = 700 / 440;
+    const isMobile = vw <= 900;
+    const isLandscape = vw > vh;
+
+    /* =========================
+       SIZE
+    ========================= */
+    let singleH = Math.floor(vh * 0.88);
+    let singleW = Math.floor(singleH / PAGE_RATIO);
+
+    if (singleW > vw * 0.9) {
+        singleW = Math.floor(vw * 0.9);
+        singleH = Math.floor(singleW * PAGE_RATIO);
+    }
+
+    let doubleW = singleW * 2;
+    let doubleH = singleH;
+
+    /* =========================
+       PAGE COUNT FIX
+    ========================= */
+    let total = $fb.children(".page").length;
+    if (total % 2 !== 0) {
+        $fb.append('<div class="page blank"></div>');
+        total++;
+    }
+
+    /* =========================
+       INIT
+    ========================= */
+    $fb.turn({
+        width: singleW,
+        height: singleH,
+        display: "single",
+        page: 1,
+        autoCenter: true,
+        gradients: true,
+        acceleration: true
+    });
+
+    /* =========================
+       DISPLAY CONTROL (SAFE)
+    ========================= */
+    function applyLayout(page) {
+
+        // FIRST PAGE
+        if (page === 1) {
+            $fb.turn("display", "single");
+            $fb.turn("size", singleW, singleH);
+            return;
+        }
+
+        // LAST PAGE
+        if (page === total) {
+            $fb.turn("display", "single");
+            $fb.turn("size", singleW, singleH);
+            return;
+        }
+
+        // INSIDE PAGES
+        if (!isMobile || isLandscape) {
+            $fb.turn("display", "double");
+            $fb.turn("size", doubleW, doubleH);
+        } else {
+            $fb.turn("display", "single");
+            $fb.turn("size", singleW, singleH);
+        }
+    }
+
+    /* =========================
+       EVENTS
+    ========================= */
+    $fb.on("turning", function (e, page) {
+
+        // ❌ BLOCK INVALID
+        if (page < 1 || page > total) {
+            e.preventDefault();
+            return false;
+        }
+
+        applyLayout(page);
+    });
+
+    $fb.on("turned", function () {
+        playFlipSound();
+        updateSideNavButtons();
+    });
+
+    applyLayout(1);
+
+    if (isMobile) attachMobileEvents($fb);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+function initFlipbook1() {
+
+    const flipbook = $("#flipbook");
+    if (!flipbook.length || flipbook.data("turn")) return;
+
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    const PAGE_RATIO = 700 / 440;
+    const isMobile = vw <= 900;
+    const isLandscape = vw > vh;
+
+    let singleWidth, singleHeight;
+    let doubleWidth, doubleHeight;
+
+    /* =========================
+       SIZE CALCULATION (SAFE)
+    ========================= */
+
+    // SINGLE PAGE
+    singleHeight = Math.floor(vh * 0.88);
+    singleWidth  = Math.floor(singleHeight / PAGE_RATIO);
+
+    if (singleWidth > vw * 0.9) {
+        singleWidth  = Math.floor(vw * 0.9);
+        singleHeight = Math.floor(singleWidth * PAGE_RATIO);
+    }
+
+    // DOUBLE PAGE (LIMITED TO SCREEN)
+    doubleWidth  = Math.min(singleWidth * 2, Math.floor(vw * 0.9));
+    doubleHeight = Math.min(singleHeight, Math.floor(vh * 0.88));
+
+    /* =========================
+       INIT – ALWAYS SINGLE FIRST
+    ========================= */
+    flipbook.turn({
+        width: singleWidth,
+        height: singleHeight,
+        display: "single",
+        page: 1,
+        autoCenter: true,
+        gradients: true,
+        acceleration: true
+    });
+
+    setTimeout(() => {
+        flipbook.turn("display", "single");
+        flipbook.turn("size", singleWidth, singleHeight);
+        flipbook.turn("page", 1);
+        flipbook.turn("center");
+        updateSideNavButtons();
+    }, 60);
+
+    /* =========================
+       PAGE TURN EVENT
+    ========================= */
+    flipbook.off("turned").on("turned", function () {
+        playFlipSound();
+        updateSideNavButtons();
+    });
+
+    /* =========================
+       OPEN / CLOSE LOGIC (FIXED)
+    ========================= */
+    let isOpen = false;
+    let locking = false;
+
+    flipbook.off("turning").on("turning", function (e, page) {
+
+        if (locking) {
+            e.preventDefault();
+            return false;
+        }
+
+        const totalPages = flipbook.turn("pages");
+
+        /* 🔓 OPEN BOOK → DOUBLE
+           (DESKTOP + MOBILE LANDSCAPE)
+        */
+        if (page > 1 && !isOpen && (!isMobile || isLandscape)) {
+            e.preventDefault();
+            locking = true;
+
+            flipbook.turn("display", "double");
+
+            setTimeout(() => {
+                const target = page % 2 === 0 ? page - 1 : page;
+                flipbook.turn("size", doubleWidth, doubleHeight);
+                flipbook.turn("page", target);
+                flipbook.turn("center");
+                isOpen = true;
+                locking = false;
+            }, 80);
+
+            return false;
+        }
+
+        /* 🔒 LAST PAGE → SINGLE (FIXED CONDITION) */
+        if (page >= totalPages - 1 && isOpen) {
+            e.preventDefault();
+            locking = true;
+
+            flipbook.turn("display", "single");
+
+            setTimeout(() => {
+                flipbook.turn("size", singleWidth, singleHeight);
+                flipbook.turn("page", totalPages);
+                flipbook.turn("center");
+                isOpen = false;
+                locking = false;
+            }, 80);
+
+            return false;
+        }
+    });
+
+    /* =========================
+       EVENTS
+    ========================= */
+    if (isMobile) {
+        attachMobileEvents(flipbook);
+        attachMobileNavButtons(flipbook);
+    }
+}
 
 
 
@@ -875,60 +1137,83 @@ function attachMobileNavButtons(flipbook) {
 /* =====================================
    DESKTOP EVENTS
 ===================================== */
-function attachDesktopEvents(flipbook) {
+function attachDesktopEvents(fb) {
 
     let isOpen = false;
-    let resizing = false;
+    let locking = false;
 
-    flipbook.on("turning", function (e, page) {
+    fb.off("turning").on("turning", function (e, page) {
 
-        if (resizing) {
+        if (locking) {
             e.preventDefault();
             return false;
         }
 
-        const totalPages = flipbook.turn("pages");
+        const total = fb.turn("pages");
 
-        // 🔓 OPEN BOOK (single → double)
+        /* ======================
+           COVER → OPEN BOOK
+        ====================== */
         if (!isOpen && page > 1) {
-            e.preventDefault();     // ⛔ stop original turn
-            resizing = true;
+            e.preventDefault();
+            locking = true;
 
-            flipbook.turn("display", "double");
-            flipbook.turn("size", 880, 560);
-
-            isOpen = true;
+            fb.turn("display", "double");
 
             setTimeout(() => {
-                resizing = false;
-                flipbook.turn("page", page);
+                fb.turn("page", page % 2 === 0 ? page - 1 : page);
+                isOpen = true;
+                locking = false;
             }, 80);
 
             return false;
         }
 
-        // 🔒 CLOSE BOOK (double → single)
-        if (isOpen && (page === 1 || page === totalPages)) {
-            e.preventDefault();     // ⛔ stop original turn
-            resizing = true;
+        /* ======================
+           LAST PAGE (ODD)
+        ====================== */
+        if (page === total && total % 2 === 1) {
+            e.preventDefault();
+            locking = true;
 
-            flipbook.turn("display", "single");
-            flipbook.turn("size", 440, 560);
-
-            isOpen = false;
+            fb.turn("display", "single");
 
             setTimeout(() => {
-                resizing = false;
-                flipbook.turn("page", page === 1 ? 1 : totalPages);
+                fb.turn("page", total);
+                isOpen = false;
+                locking = false;
+            }, 80);
+
+            return false;
+        }
+
+        /* ======================
+           BACK TO COVER
+        ====================== */
+        if (isOpen && page === 1) {
+            e.preventDefault();
+            locking = true;
+
+            fb.turn("display", "single");
+
+            setTimeout(() => {
+                fb.turn("page", 1);
+                isOpen = false;
+                locking = false;
             }, 80);
 
             return false;
         }
     });
-
-    $("#nextPage").on("click", () => flipbook.turn("next"));
-    $("#prevPage").on("click", () => flipbook.turn("previous"));
 }
+document.getElementById("nextPage")?.addEventListener("click", () => {
+    $("#flipbook").turn("next");
+});
+
+document.getElementById("prevPage")?.addEventListener("click", () => {
+    $("#flipbook").turn("previous");
+});
+
 
 
 /* =====================================
@@ -1069,7 +1354,7 @@ function copyShareLink() {
 // }
 
 
-function updateSideNavButtons() {
+function updateSideNavButtons1() {
 
     const flipbook = $("#flipbook");
     if (!flipbook.length || !flipbook.data("turn")) return;
@@ -1092,6 +1377,30 @@ function updateSideNavButtons() {
         nextBtn.style.display = "none";
     } else {
         nextBtn.style.display = "flex";
+    }
+}
+function updateSideNavButtons() {
+
+    const fb = $("#flipbook");
+    if (!fb.length || !fb.data("turn")) return;
+
+    const page  = fb.turn("page");
+    const total = fb.turn("pages");
+    const display = fb.turn("display");
+
+    const prev = document.getElementById("prevPage");
+    const next = document.getElementById("nextPage");
+
+    if (!prev || !next) return;
+
+    // PREV
+    prev.style.display = page <= 1 ? "none" : "flex";
+
+    // NEXT
+    if (display === "single") {
+        next.style.display = page >= total ? "none" : "flex";
+    } else {
+        next.style.display = page >= total - 1 ? "none" : "flex";
     }
 }
 
@@ -1147,3 +1456,80 @@ window.addEventListener("resize", () => {
         location.reload(); // 🔁 FULL REFRESH
     }
 });
+
+/* ===============================
+   EBOOK LOADER CONTROL
+================================ */
+function showEbookLoader() {
+    const loader = document.getElementById("ebookLoader");
+    const viewer = document.getElementById("viewer-wrapper");
+
+    if (loader) loader.style.display = "flex";
+    if (viewer) viewer.classList.remove("show");
+}
+
+function hideEbookLoader() {
+    const loader = document.getElementById("ebookLoader");
+    const viewer = document.getElementById("viewer-wrapper");
+
+    if (loader) loader.style.display = "none";
+    if (viewer) {
+        viewer.style.display = "flex";
+        requestAnimationFrame(() => viewer.classList.add("show"));
+    }
+}
+
+/* ===============================
+   WAIT FOR IMAGES THEN INIT
+================================ */
+document.addEventListener("DOMContentLoaded", () => {
+
+    const flipbook = document.getElementById("flipbook");
+    if (!flipbook) return;
+
+    showEbookLoader();
+
+    const images = flipbook.querySelectorAll("img");
+    let loaded = 0;
+
+    if (images.length === 0) {
+        initFlipbook();
+        hideEbookLoader();
+        return;
+    }
+
+    images.forEach(img => {
+        if (img.complete) {
+            loaded++;
+        } else {
+            img.onload = img.onerror = () => {
+                loaded++;
+                if (loaded === images.length) {
+                    initFlipbook();
+                    hideEbookLoader();
+                }
+            };
+        }
+    });
+
+    if (loaded === images.length) {
+        initFlipbook();
+        hideEbookLoader();z
+    }
+});
+
+
+$("#prevPage").on("click", function () {
+    const page = $("#flipbook").turn("page");
+    if (page <= 1) return;
+    $("#flipbook").turn("page", page - 1);
+});
+$("#nextPage").on("click", function () {
+    const fb = $("#flipbook");
+    const page = fb.turn("page");
+    const total = fb.turn("pages");
+
+    if (page >= total) return;
+    fb.turn("page", page + 1);
+});
+

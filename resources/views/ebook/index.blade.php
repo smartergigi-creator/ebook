@@ -84,64 +84,69 @@
                     </thead>
 
                     <tbody>
-                        @php $groupNo = 1; @endphp
+    @php $groupNo = ($ebooks->currentPage() - 1) * $ebooks->perPage() + 1; @endphp
 
-                        @foreach ($ebooks as $manualTitle => $files)
-                            {{-- 🔵 MANUAL TITLE ROW --}}
-                            <tr class="ebook-group-row">
-                                <td colspan="5">
-                                    📘 {{ $groupNo }}. {{ $manualTitle }}
-                                    <span class="file-count">({{ $files->count() }}
-                                        file{{ $files->count() > 1 ? 's' : '' }})</span>
-                                </td>
-                            </tr>
+    @foreach ($groupedEbooks as $manualTitle => $files)
+        {{-- 🔵 MANUAL TITLE ROW --}}
+        <tr class="ebook-group-row">
+            <td colspan="5">
+                📘 {{ $groupNo }}. {{ $manualTitle }}
+                <span class="file-count">
+                    ({{ $files->count() }} file{{ $files->count() > 1 ? 's' : '' }})
+                </span>
+            </td>
+        </tr>
 
-                            {{-- 📄 FILE ROWS --}}
-                            @foreach ($files as $file)
-                                <tr>
-                                    <td></td>
-                                    <td class="file-name ">
-                                        {{ $file->file_title }}
-                                    </td>
-                                    <td>{{ $file->folder_path }}</td>
-                                    <td class="date-col">
-                                        {{ $file->created_at->format('d-m-Y H:i A') }}
-                                    </td>
+        {{-- 📄 FILE ROWS --}}
+        @foreach ($files as $file)
+            <tr>
+                <td></td>
+                <td class="file-name">
+                    {{ $file->file_title }}
+                </td>
+                <td>{{ $file->folder_path }}</td>
+                <td class="date-col">
+                    {{ $file->created_at->format('d-m-Y H:i A') }}
+                </td>
+                <td class="actions-col">
 
-                                    {{-- <td>{{ $file->created_at->format('d-m-Y H:i A') }}</td> --}}
-                                    <td class="actions-col">
+                    <a href="{{ route('ebook.view', $file->id) }}" class="btn btn-primary btn-sm">
+                        View
+                    </a>
 
-                                        <a href="{{ route('ebook.view', $file->id) }}" class="btn btn-primary btn-sm">
-                                            View
-                                        </a>
+                    <button class="btn btn-info btn-sm"
+                        onclick="openShareModal({{ $file->id }})">
+                        Share
+                    </button>
 
-                                        <button class="btn btn-info btn-sm" onclick="openShareModal({{ $file->id }})">
-                                            Share
-                                        </button>
+                    <form action="{{ route('ebook.delete', $file->id) }}"
+                        method="POST"
+                        style="display:inline;"
+                        onsubmit="return confirm('Are you sure you want to delete this ebook?')">
 
-                                        <form action="{{ route('ebook.delete', $file->id) }}" method="POST"
-                                            style="display:inline;"
-                                            onsubmit="return confirm('Are you sure you want to delete this ebook?')">
+                        @csrf
+                        @method('DELETE')
 
-                                            @csrf
-                                            @method('DELETE')
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            Delete
+                        </button>
+                    </form>
 
-                                            <button type="submit" class="btn btn-danger btn-sm">
-                                                Delete
-                                            </button>
-                                        </form>
+                </td>
+            </tr>
+        @endforeach
 
+        @php $groupNo++; @endphp
+    @endforeach
+</tbody>
 
-                                    </td>
-                                </tr>
-                            @endforeach
-
-                            @php $groupNo++; @endphp
-                        @endforeach
-                    </tbody>
 
 
                 </table>
+                <div class="pagination-wrapper">
+    {{ $ebooks->onEachSide(1)->links('pagination::bootstrap-5') }}
+</div>
+
             </div>
         </div>
     </div>
