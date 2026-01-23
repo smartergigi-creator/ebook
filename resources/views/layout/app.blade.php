@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     @include('layout.header')
 </head>
-{{-- <body> --}}
-    <body class="@yield('body-class')">
+<body class="@yield('body-class')">
+   
 
 
     @yield('content')
 
+    {{-- 🔥 VERY IMPORTANT --}}
     @include('layout.footer')
-
 
 </body>
 </html>

@@ -12,3 +12,5 @@
 
 <!-- Custom CSS -->
 <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+<link rel="stylesheet" href="https://unpkg.com/page-flip/dist/css/page-flip.css">
+

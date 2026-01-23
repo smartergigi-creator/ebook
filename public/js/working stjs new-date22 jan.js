@@ -71,9 +71,7 @@ function initFileUpload() {
     /* ===============================
        CONFIG
     =============================== */
-    // const PAGE_RATIO = 700 / 440; // height / width
-    let PAGE_RATIO = 700 / 440; // default (portrait)
-
+    const PAGE_RATIO = 700 / 440; // height / width
     let zoomLevel = 1;
 
     const ZOOM_MIN = 1;
@@ -90,22 +88,6 @@ function initFileUpload() {
         setupZoomControls();
     });
 
-    //detectPageRatio
-
-function detectPageRatio() {
-    const firstPage = document.querySelector(".page img, .page canvas");
-
-    if (!firstPage) return;
-
-    const w = firstPage.naturalWidth || firstPage.width;
-    const h = firstPage.naturalHeight || firstPage.height;
-
-    if (w && h) {
-        PAGE_RATIO = h / w; // auto adjust for landscape/portrait
-        console.log("PAGE_RATIO detected:", PAGE_RATIO);
-    }
-}
-
     /* ===============================
        IMAGE WAIT
     =============================== */
@@ -120,21 +102,11 @@ function detectPageRatio() {
             if (img.complete) loaded++;
             else img.onload = img.onerror = () => {
                 loaded++;
-                // if (loaded === imgs.length) init();
-                if (loaded === imgs.length) {
-    detectPageRatio(); // 👈 important
-    init();
-}
-
+                if (loaded === imgs.length) init();
             };
         });
 
-        // if (loaded === imgs.length) init();
-        if (loaded === imgs.length) {
-    detectPageRatio(); // 👈 important
-    init();
-}
-
+        if (loaded === imgs.length) init();
     }
 
     /* ===============================
@@ -156,46 +128,44 @@ function detectPageRatio() {
        Mobile = Single
        Desktop = Double
     =============================== */
-   function applyMode(initial) {
+    function applyMode(initial) {
+        const vw = window.innerWidth;
+        const isMobile = vw <= 900;
 
-    const isMobile = window.innerWidth <= 900; // ✅ Better detection
+        const requiredMode = isMobile ? "single" : "double";
 
-    // Mobile = always single
-    const requiredMode = isMobile ? "single" : "double";
+        if (currentMode === requiredMode && !initial) {
+            updateSize();
+            return;
+        }
 
-    if (currentMode === requiredMode && !initial) {
-        updateSize();
-        return;
+        currentMode = requiredMode;
+        destroyFlipbook();
+        initFlipbook(requiredMode);
     }
-
-    currentMode = requiredMode;
-
-    destroyFlipbook();
-    initFlipbook(requiredMode);
-}
-
-
 
     /* ===============================
        SIZE CALCULATION
     =============================== */
-function calculateSize() {
+    function calculateSize() {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
-    let maxW = vw * 0.9;
-    let maxH = vh * 0.9;
+    // Safe usable area
+    let maxW = vw * 0.92;
+    let maxH = vh * 0.92;
 
-    maxW = Math.min(maxW, 1800);
-    maxH = Math.min(maxH, 1200);
+    // Clamp for very large screens
+    maxW = Math.min(maxW, 1600);
+    maxH = Math.min(maxH, 1000);
 
-    let width = maxW;
-    let height = width * PAGE_RATIO;
+    let height = maxH;
+    let width = height / PAGE_RATIO;
 
-    // If too tall, resize
-    if (height > maxH) {
-        height = maxH;
-        width = height / PAGE_RATIO;
+    // Prevent overflow on small screens
+    if (width > maxW) {
+        width = maxW;
+        height = width * PAGE_RATIO;
     }
 
     return {
@@ -203,7 +173,6 @@ function calculateSize() {
         height: Math.floor(height)
     };
 }
-
 
 
     function updateSize() {
@@ -243,9 +212,11 @@ function calculateSize() {
 
         pageFlip.on("flip", updateNavButtons);
 
-        // Always start from first page
-pageFlip.turnToPage(0);
-
+        if (mode === "double") {
+            pageFlip.turnToPage(0);
+        } else {
+            pageFlip.turnToPage(1);
+        }
 
         attachNavButtons();
         setTimeout(updateNavButtons, 80);
@@ -346,26 +317,30 @@ pageFlip.turnToPage(0);
         if (zoomResetBtn) zoomResetBtn.onclick = () => applyZoom(1);
     }
 
-function adjustToolbarPosition() {
+    function adjustToolbarPosition() {
     const toolbar = document.querySelector(".viewer-toolbar");
     if (!toolbar) return;
 
     const isMobile = window.innerWidth <= 900;
+    const isFullscreen = document.fullscreenElement;
 
-    /* ✅ ALWAYS TOP-RIGHT (DESKTOP + MOBILE + FULLSCREEN) */
-    toolbar.style.top = "16px";
-    toolbar.style.right = "16px";
-    toolbar.style.left = "auto";
-    toolbar.style.bottom = "auto";
-    toolbar.style.transform = "none";
-
-    /* Slightly tighter on mobile */
-    if (isMobile) {
-        toolbar.style.top = "12px";
-        toolbar.style.right = "12px";
+    // Mobile → bottom center
+    if (isMobile && !isFullscreen) {
+        toolbar.style.top = "auto";
+        toolbar.style.bottom = "16px";
+        toolbar.style.right = "50%";
+        toolbar.style.left = "auto";
+        toolbar.style.transform = "translateX(50%)";
+    }
+    // Desktop / Fullscreen → top right
+    else {
+        toolbar.style.top = "16px";
+        toolbar.style.bottom = "auto";
+        toolbar.style.right = "16px";
+        toolbar.style.left = "auto";
+        toolbar.style.transform = "none";
     }
 }
-
 window.addEventListener("resize", () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
@@ -404,34 +379,13 @@ function copyShareLink() {
     alert("Link copied!");
 }
    
-// let lastOrientation = window.innerWidth > window.innerHeight ? "landscape" : "portrait";
-
-// window.addEventListener("resize", () => {
-//     const currentOrientation =
-//         window.innerWidth > window.innerHeight ? "landscape" : "portrait";
-
-//     if (currentOrientation !== lastOrientation) {
-//         location.reload(); 
-//     }
-// });
-window.addEventListener("orientationchange", () => {
-    setTimeout(() => {
-        applyMode(false);
-        updateSize();
-    }, 400);
-});
-function handleOrientationFix() {
-    const isMobile = window.innerWidth <= 900;
-
-    if (isMobile) {
-        applyMode(false); // always single
-    }
-}
-
-window.addEventListener("orientationchange", () => {
-    setTimeout(handleOrientationFix, 300);
-});
+let lastOrientation = window.innerWidth > window.innerHeight ? "landscape" : "portrait";
 
 window.addEventListener("resize", () => {
-    setTimeout(handleOrientationFix, 300);
+    const currentOrientation =
+        window.innerWidth > window.innerHeight ? "landscape" : "portrait";
+
+    if (currentOrientation !== lastOrientation) {
+        location.reload(); // 🔁 FULL REFRESH
+    }
 });
