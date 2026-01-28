@@ -15,6 +15,7 @@ class Ebook extends Model
         'folder_path',
         'share_token',
         'share_expires_at',
-        'share_enabled'
+        'share_enabled',
+        'ggg',
     ];
 }

@@ -2,6 +2,7 @@
 
 @section('content')
 @section('body-class', 'ebook-view')
+
 <a href="{{ route('ebooks.index') }}" class="ebook-back-btn">← Back</a>
 
 {{-- LOADER --}}
@@ -12,30 +13,36 @@
     </div>
 </div>
 
-{{-- VIEWER --}}
+
+{{-- ===============================
+   VIEWER
+=============================== --}}
 <div id="viewer-wrapper">
 
     {{-- TOOLBAR --}}
     <div class="viewer-toolbar">
+        <button id="tocBtn">☰</button>
         <button id="zoomIn">+</button>
         <button id="zoomOut">−</button>
         <button id="zoomReset">⟳</button>
         <button id="fullscreenToggle">⛶</button>
     </div>
 
+
     {{-- FLIPBOOK --}}
     <div id="flipbook">
 
         {{-- COVER PAGE --}}
-        @if(isset($pages[0]))
-            <div class="page cover">
+        @if (isset($pages[0]))
+            <div class="page cover" data-density="soft">
                 <img src="{{ $pages[0] }}" alt="Cover">
             </div>
         @endif
 
+
         {{-- INNER PAGES --}}
-        @foreach($pages as $i => $img)
-            @if($i !== 0)
+        @foreach ($pages as $i => $img)
+            @if ($i !== 0)
                 <div class="page">
                     <img src="{{ $img }}" alt="Page {{ $i + 1 }}">
                 </div>
@@ -44,8 +51,10 @@
 
     </div>
 
+
     {{-- SIDE NAV --}}
     <div class="ebook-side-nav">
+
         <button class="side-btn prev" id="prevPage">
             <img src="{{ asset('images/back.png') }}" alt="Previous">
         </button>
@@ -53,13 +62,51 @@
         <button class="side-btn next" id="nextPage">
             <img src="{{ asset('images/share.png') }}" alt="Next">
         </button>
+
     </div>
 
 </div>
+{{-- ===== END viewer-wrapper ===== --}}
+
+
+
+{{-- ===============================
+   TABLE OF CONTENTS (OUTSIDE)
+=============================== --}}
+<div id="tocPanel">
+
+    <div class="toc-header">
+        <span>Table of Contents</span>
+        <button id="closeToc">✖</button>
+    </div>
+
+    {{-- <div id="tocList">
+
+        @foreach ($pages as $i => $img)
+            <div class="toc-item" data-page="{{ $i }}">
+                Page {{ str_pad($i+1, 3, '0', STR_PAD_LEFT) }}
+            </div>
+        @endforeach
+
+    </div> --}}
+   <div id="tocList">
+
+    @foreach($pages as $i => $img)
+        <div class="toc-item"
+             data-page="{{ $i }}"
+             data-num="{{ $i+1 }}">
+            Page {{ str_pad($i+1, 3, '0', STR_PAD_LEFT) }}
+        </div>
+    @endforeach
+
+</div>
+
+
+</div>
+
+
 
 {{-- AUDIO --}}
-<audio id="flipSound"
-       src="{{ asset('sound/pageflip.mp3') }}"
-       preload="auto"></audio>
+<audio id="flipSound" src="{{ asset('sound/pageflip.mp3') }}" preload="auto"></audio>
 
 @endsection

@@ -1,398 +1,712 @@
+/* ==================================================
+   EBOOK VIEWER - FINAL STABLE VERSION
+================================================== */
+
 (() => {
-
-
-/* =====================================
-   DOM READY
-===================================== */
-document.addEventListener("DOMContentLoaded", () => {
-    initFileUpload();
-   
-});
-
-/* =====================================
-   FILE UPLOAD
-===================================== */
-function initFileUpload() {
-
-    const pdfInput        = document.getElementById("pdfInput");
-    const folderInput     = document.getElementById("folderInput");
-    const selectFilesBtn  = document.getElementById("selectFiles");
-    const selectFolderBtn = document.getElementById("selectFolder");
-
-    const fileList  = document.getElementById("fileList");
-    const fileItems = document.getElementById("fileItems");
-    const fileCount = document.getElementById("fileCount");
-
-    if (!pdfInput && !folderInput) return;
-
-    function updateFileList(files) {
-        fileItems.innerHTML = "";
-        let count = 0;
-        let folderName = null;
-
-        [...files].forEach(file => {
-            if (file.type === "application/pdf") {
-                count++;
-                if (!folderName && file.webkitRelativePath) {
-                    folderName = file.webkitRelativePath.split("/")[0];
-                }
-                const li = document.createElement("li");
-                li.textContent = file.name;
-                fileItems.appendChild(li);
-            }
-        });
-
-        if (count > 0) {
-            fileList.style.display = "block";
-            fileCount.textContent = count;
-            if (folderName) {
-                const title = document.createElement("li");
-                title.style.fontWeight = "bold";
-                title.textContent = `📁 Folder: ${folderName}`;
-                fileItems.prepend(title);
-            }
-        }
+    if (window.__EBOOK_APP_LOADED__) {
+        console.warn("Ebook script already loaded");
+        return;
     }
-
-    selectFilesBtn?.addEventListener("click", () => pdfInput.click());
-    selectFolderBtn?.addEventListener("click", () => folderInput.click());
-    pdfInput?.addEventListener("change", () => updateFileList(pdfInput.files));
-    folderInput?.addEventListener("change", () => updateFileList(folderInput.files));
-}
-
-
- 
-
-
-    let pageFlip = null;
-    let currentMode = null; // "single" | "double"
-    let resizeTimer = null;
+    window.__EBOOK_APP_LOADED__ = true;
 
     /* ===============================
-       CONFIG
-    =============================== */
-    // const PAGE_RATIO = 700 / 440; // height / width
-    let PAGE_RATIO = 700 / 440; // default (portrait)
+   GLOBAL
+=============================== */
 
+    let pageFlip = null;
+    const PAGE_OFFSET = 1; // for fake first page
+
+    let isReady = false;
+    let isInitRunning = false;
+    let fileUploadInitialized = false;
+
+    let PAGE_RATIO = 700 / 440;
+
+    /* Zoom */
     let zoomLevel = 1;
-
     const ZOOM_MIN = 1;
     const ZOOM_MAX = 2.5;
     const ZOOM_STEP = 0.2;
 
+    /* Sound */
+    let flipSound = null;
+    let soundUnlocked = false;
+
     /* ===============================
-       DOM READY
-    =============================== */
+   DOM READY
+=============================== */
+
     document.addEventListener("DOMContentLoaded", () => {
-        const flipbook = document.getElementById("flipbook");
-        if (flipbook) waitForImages();
-        setupFullscreen();
+        initFileUpload();
+
+        flipSound = document.getElementById("flipSound");
+        unlockSound();
+
+        loadBook();
+
         setupZoomControls();
+        setupFullscreen();
+        setupTOC(); // ✅ ADD THIS
+        updateTOCLayout();
+
     });
 
-    //detectPageRatio
+    /* ===============================
+   AUDIO
+=============================== */
 
-function detectPageRatio() {
-    const firstPage = document.querySelector(".page img, .page canvas");
+    function unlockSound() {
+        const prev = document.getElementById("prevPage");
+        const next = document.getElementById("nextPage");
 
-    if (!firstPage) return;
+        function unlock() {
+            if (!flipSound || soundUnlocked) return;
 
-    const w = firstPage.naturalWidth || firstPage.width;
-    const h = firstPage.naturalHeight || firstPage.height;
+            flipSound
+                .play()
+                .then(() => {
+                    flipSound.pause();
+                    flipSound.currentTime = 0;
+                    soundUnlocked = true;
+                })
+                .catch(() => {});
+        }
 
-    if (w && h) {
-        PAGE_RATIO = h / w; // auto adjust for landscape/portrait
-        console.log("PAGE_RATIO detected:", PAGE_RATIO);
+        // 🔥 Only unlock when nav buttons clicked
+        prev?.addEventListener("click", unlock, { once: true });
+        next?.addEventListener("click", unlock, { once: true });
     }
-}
+
+    function playSound() {
+        if (!flipSound || !soundUnlocked) return;
+
+        flipSound.currentTime = 0;
+        flipSound.play().catch(() => {});
+    }
 
     /* ===============================
-       IMAGE WAIT
-    =============================== */
-    function waitForImages() {
-        const book = document.getElementById("flipbook");
-        const imgs = book.querySelectorAll("img");
+   LOAD BOOK
+=============================== */
+
+    function loadBook() {
+        if (isInitRunning || isReady) return;
+
+        isInitRunning = true;
+
+        const flipbook = document.getElementById("flipbook");
+        if (!flipbook) return;
+
+        waitForImages(() => {
+            detectPageRatio();
+            initFlipbook();
+
+            isReady = true;
+            isInitRunning = false;
+
+            hideLoader();
+        });
+    }
+
+    /* ===============================
+   IMAGE WAIT
+=============================== */
+
+    function waitForImages(cb) {
+        const imgs = document.querySelectorAll("#flipbook img");
+
+        if (!imgs.length) return cb();
 
         let loaded = 0;
-        if (!imgs.length) return init();
 
-        imgs.forEach(img => {
-            if (img.complete) loaded++;
-            else img.onload = img.onerror = () => {
+        imgs.forEach((img) => {
+            if (img.complete) {
                 loaded++;
-                // if (loaded === imgs.length) init();
-                if (loaded === imgs.length) {
-    detectPageRatio(); // 👈 important
-    init();
-}
+            } else {
+                img.onload = img.onerror = () => {
+                    loaded++;
 
-            };
+                    if (loaded === imgs.length) cb();
+                };
+            }
         });
 
-        // if (loaded === imgs.length) init();
-        if (loaded === imgs.length) {
-    detectPageRatio(); // 👈 important
-    init();
-}
-
+        if (loaded === imgs.length) cb();
     }
 
     /* ===============================
-       INIT
-    =============================== */
-    function init() {
-        applyMode(true);
-        window.addEventListener("resize", onResize);
-        hideLoader();
-    }
+   PAGE RATIO
+=============================== */
 
-    function onResize() {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => applyMode(false), 200);
-    }
+    function detectPageRatio() {
+        const img = document.querySelector(".page img");
 
-    /* ===============================
-       MODE LOGIC
-       Mobile = Single
-       Desktop = Double
-    =============================== */
-   function applyMode(initial) {
+        if (!img) return;
 
-    const isMobile = window.innerWidth <= 900; // ✅ Better detection
-
-    // Mobile = always single
-    const requiredMode = isMobile ? "single" : "double";
-
-    if (currentMode === requiredMode && !initial) {
-        updateSize();
-        return;
-    }
-
-    currentMode = requiredMode;
-
-    destroyFlipbook();
-    initFlipbook(requiredMode);
-}
-
-
-
-    /* ===============================
-       SIZE CALCULATION
-    =============================== */
-function calculateSize() {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-
-    let maxW = vw * 0.9;
-    let maxH = vh * 0.9;
-
-    maxW = Math.min(maxW, 1800);
-    maxH = Math.min(maxH, 1200);
-
-    let width = maxW;
-    let height = width * PAGE_RATIO;
-
-    // If too tall, resize
-    if (height > maxH) {
-        height = maxH;
-        width = height / PAGE_RATIO;
-    }
-
-    return {
-        width: Math.floor(width),
-        height: Math.floor(height)
-    };
-}
-
-
-
-    function updateSize() {
-        if (!pageFlip) return;
-        const { width, height } = calculateSize();
-        pageFlip.update({ width, height });
+        PAGE_RATIO = img.naturalHeight / img.naturalWidth;
     }
 
     /* ===============================
-       DESTROY
-    =============================== */
-    function destroyFlipbook() {
-        if (pageFlip) {
-            pageFlip.destroy();
-            pageFlip = null;
+   SIZE
+=============================== */
+
+    function calculateSize() {
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+
+        let w = vw * 0.9;
+        let h = w * PAGE_RATIO;
+
+        if (h > vh * 0.9) {
+            h = vh * 0.9;
+            w = h / PAGE_RATIO;
         }
+
+        return {
+            width: Math.floor(w),
+            height: Math.floor(h),
+        };
     }
 
     /* ===============================
-       INIT FLIPBOOK
-    =============================== */
-    function initFlipbook(mode) {
+   FLIPBOOK
+=============================== */
+
+    function initFlipbook() {
+        if (pageFlip) return;
+
         const book = document.getElementById("flipbook");
+        if (!book) return;
+
+        /* Fake pages */
+
+        let pages = book.querySelectorAll(".page");
+
+        if (!pages[0]?.classList.contains("fake")) {
+            const fake = document.createElement("div");
+            fake.className = "page fake";
+
+            book.insertBefore(fake, pages[0]);
+        }
+
+        pages = book.querySelectorAll(".page");
+
+        if (pages.length % 2 !== 0) {
+            const fake = document.createElement("div");
+            fake.className = "page fake";
+
+            book.appendChild(fake);
+        }
+
         const { width, height } = calculateSize();
+
+        const mobile = window.innerWidth <= 900;
+        const landscape = window.innerWidth > window.innerHeight;
 
         pageFlip = new St.PageFlip(book, {
             width,
             height,
-            size: "fixed",
-            showCover: mode === "double",
-            usePortrait: mode === "single",
-            maxShadowOpacity: 0.5,
-            mobileScrollSupport: false
+
+            size: mobile && landscape ? "stretch" : "fixed",
+
+            showCover: false,
+
+            // usePortrait: mobile && !landscape,
+            usePortrait:
+                window.innerWidth <= 768 &&
+                window.innerHeight > window.innerWidth,
+
+            autoSize: true,
+            maxShadowOpacity: 0.3,
+
+            mobileScrollSupport: true,
+
+            flippingTime: 500,
         });
 
         pageFlip.loadFromHTML(book.querySelectorAll(".page"));
 
-        pageFlip.on("flip", updateNavButtons);
+        setTimeout(() => {
+            pageFlip.turnToPage(1);
+            updateNav();
+        }, 150);
 
-        // Always start from first page
-pageFlip.turnToPage(0);
+        /* SOUND ONLY HERE */
+        pageFlip.on("flip", () => {
+            updateNav();
+            playSound();
+        });
 
+        setupNav();
 
-        attachNavButtons();
-        setTimeout(updateNavButtons, 80);
-        adjustToolbarPosition();
-        updateNavButtons();
-
+        window.addEventListener("resize", debounce(resizeBook, 300));
     }
 
     /* ===============================
-       NAV BUTTONS
-    =============================== */
-    function attachNavButtons() {
+   RESIZE
+=============================== */
+
+    function resizeBook() {
+        if (!pageFlip) return;
+
+        pageFlip.update(calculateSize());
+    }
+
+    function debounce(fn, d) {
+        let t;
+
+        return function () {
+            clearTimeout(t);
+
+            t = setTimeout(fn, d);
+        };
+    }
+
+    /* ===============================
+   NAV
+=============================== */
+
+    function setupNav() {
         const prev = document.getElementById("prevPage");
         const next = document.getElementById("nextPage");
 
         if (prev) {
-            prev.onclick = e => {
+            prev.onclick = (e) => {
                 e.preventDefault();
                 pageFlip.flipPrev();
             };
         }
 
         if (next) {
-            next.onclick = e => {
+            next.onclick = (e) => {
                 e.preventDefault();
                 pageFlip.flipNext();
             };
         }
     }
 
-    function updateNavButtons() {
+    function updateNav() {
         if (!pageFlip) return;
 
-        const page = pageFlip.getCurrentPageIndex();
-        const total = pageFlip.getPageCount() - 1;
+        const i = pageFlip.getCurrentPageIndex();
+        const t = pageFlip.getPageCount() - 1;
 
         const prev = document.getElementById("prevPage");
         const next = document.getElementById("nextPage");
 
-        if (prev) prev.style.display = page <= 0 ? "none" : "flex";
-        if (next) next.style.display = page >= total ? "none" : "flex";
+        if (prev) prev.style.display = i <= 1 ? "none" : "flex";
+        if (next) next.style.display = i >= t ? "none" : "flex";
     }
 
     /* ===============================
-       LOADER
-    =============================== */
-    function hideLoader() {
-        const loader = document.getElementById("ebookLoader");
-        const viewer = document.getElementById("viewer-wrapper");
+   ZOOM
+=============================== */
 
-        if (loader) loader.remove();
-        if (viewer) viewer.classList.add("show");
-    }
+    function applyZoom(v) {
+        zoomLevel = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, v));
 
-    /* ===============================
-       FULLSCREEN
-    =============================== */
-    function setupFullscreen() {
-        const fullscreenBtn = document.getElementById("fullscreenToggle");
-        const viewerWrapper = document.getElementById("viewer-wrapper");
+        const w = document.querySelector(".stf__wrapper");
 
-        if (!fullscreenBtn || !viewerWrapper) return;
+        if (!w) return;
 
-        fullscreenBtn.addEventListener("click", () => {
-            if (!document.fullscreenElement) {
-                viewerWrapper.requestFullscreen();
-                document.body.classList.add("fullscreen-active");
-            } else {
-                document.exitFullscreen();
-                document.body.classList.remove("fullscreen-active");
-            }
-        });
-
-        document.addEventListener("fullscreenchange", () => {
-            if (!document.fullscreenElement) {
-                document.body.classList.remove("fullscreen-active");
-            }
-        });
-    }
-
-    /* ===============================
-       ZOOM
-    =============================== */
-    function applyZoom(value) {
-        zoomLevel = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, value));
-        const flipbook = document.getElementById("flipbook");
-        if (!flipbook) return;
-        flipbook.style.transform = `scale(${zoomLevel})`;
+        w.style.transform = `scale(${zoomLevel})`;
     }
 
     function setupZoomControls() {
-        const zoomInBtn = document.getElementById("zoomIn");
-        const zoomOutBtn = document.getElementById("zoomOut");
-        const zoomResetBtn = document.getElementById("zoomReset");
+        const zi = document.getElementById("zoomIn");
+        const zo = document.getElementById("zoomOut");
+        const zr = document.getElementById("zoomReset");
 
-        if (zoomInBtn) zoomInBtn.onclick = () => applyZoom(zoomLevel + ZOOM_STEP);
-        if (zoomOutBtn) zoomOutBtn.onclick = () => applyZoom(zoomLevel - ZOOM_STEP);
-        if (zoomResetBtn) zoomResetBtn.onclick = () => applyZoom(1);
+        if (!zi || !zo || !zr) return;
+
+        zi.onclick = () => applyZoom(zoomLevel + ZOOM_STEP);
+        zo.onclick = () => applyZoom(zoomLevel - ZOOM_STEP);
+        zr.onclick = () => applyZoom(1);
     }
 
-function adjustToolbarPosition() {
-    const toolbar = document.querySelector(".viewer-toolbar");
-    if (!toolbar) return;
+    /* ===============================
+   FULLSCREEN
+=============================== */
 
-    const isMobile = window.innerWidth <= 900;
+    function setupFullscreen() {
+        const btn = document.getElementById("fullscreenToggle");
+        const wrap = document.getElementById("viewer-wrapper");
 
-    /* ✅ ALWAYS TOP-RIGHT (DESKTOP + MOBILE + FULLSCREEN) */
-    toolbar.style.top = "16px";
-    toolbar.style.right = "16px";
-    toolbar.style.left = "auto";
-    toolbar.style.bottom = "auto";
-    toolbar.style.transform = "none";
+        if (!btn || !wrap) return;
 
-    /* Slightly tighter on mobile */
-    if (isMobile) {
-        toolbar.style.top = "12px";
-        toolbar.style.right = "12px";
+        btn.onclick = () => {
+            document.fullscreenElement
+                ? document.exitFullscreen()
+                : wrap.requestFullscreen();
+        };
     }
-}
+    /* ===============================
+   TABLE OF CONTENTS
+=============================== */
 
-window.addEventListener("resize", () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-        applyMode(false);
-        adjustToolbarPosition();
-    }, 200);
-});
-document.addEventListener("fullscreenchange", () => {
-    adjustToolbarPosition();
-});
+    function setupTOC() {
+        const tocBtn = document.getElementById("tocBtn");
+        const tocPanel = document.getElementById("tocPanel");
+        const closeBtn = document.getElementById("closeToc");
+
+        if (!tocBtn || !tocPanel || !closeBtn) return;
+
+        // Highlight current page
+        if (pageFlip) {
+            pageFlip.on("flip", () => {
+                // const index = pageFlip.getCurrentPageIndex();
+                const index = pageFlip.getCurrentPageIndex() - PAGE_OFFSET;
+
+                document.querySelectorAll(".toc-item").forEach((item) => {
+                    item.classList.remove("active");
+
+                    if (parseInt(item.dataset.page) === index) {
+                        item.classList.add("active");
+                    }
+                });
+            });
+        }
+
+        /* Open TOC */
+        tocBtn.addEventListener("click", () => {
+            tocPanel.classList.add("active");
+        });
+
+        /* Close TOC */
+        closeBtn.addEventListener("click", () => {
+            tocPanel.classList.remove("active");
+        });
+
+        /* Jump Page */
+        document.querySelectorAll(".toc-item").forEach((item) => {
+            item.addEventListener("click", function () {
+                const page = parseInt(this.dataset.page);
+
+                if (pageFlip && !isNaN(page)) {
+                    // pageFlip.turnToPage(page);
+                    pageFlip.flip(page + PAGE_OFFSET);
+                }
+
+                // tocPanel.classList.remove("active");
+            });
+        });
+    }
+
+    /* ===============================
+   FILE UPLOAD (SAFE)
+=============================== */
+
+    function initFileUpload() {
+        if (fileUploadInitialized) return;
+        fileUploadInitialized = true;
+
+        const pdf = document.getElementById("pdfInput");
+        const folder = document.getElementById("folderInput");
+
+        const b1 = document.getElementById("selectFiles");
+        const b2 = document.getElementById("selectFolder");
+
+        const list = document.getElementById("fileList");
+        const items = document.getElementById("fileItems");
+        const count = document.getElementById("fileCount");
+
+        if (!pdf && !folder) return;
+
+        function update(files) {
+            items.innerHTML = "";
+
+            let c = 0;
+
+            [...files].forEach((f) => {
+                if (f.type === "application/pdf") {
+                    c++;
+
+                    const li = document.createElement("li");
+                    li.textContent = f.name;
+
+                    items.appendChild(li);
+                }
+            });
+
+            if (c > 0) {
+                list.style.display = "block";
+                count.textContent = c;
+            }
+        }
+
+        b1?.addEventListener("click", (e) => {
+            e.preventDefault();
+
+            pdf.value = "";
+            pdf.click();
+        });
+
+        b2?.addEventListener("click", (e) => {
+            e.preventDefault();
+
+            folder.value = "";
+            folder.click();
+        });
+
+        pdf?.addEventListener("change", () => update(pdf.files));
+        folder?.addEventListener("change", () => update(folder.files));
+    }
+//     function initFileUpload() {
+
+//     if (fileUploadInitialized) return;
+//     fileUploadInitialized = true;
+
+//     const dropZone = document.getElementById("dropzone");
+
+//     const pdf = document.getElementById("pdfInput");
+//     const folder = document.getElementById("folderInput");
+
+//     const b1 = document.getElementById("selectFiles");
+//     const b2 = document.getElementById("selectFolder");
+
+//     const list = document.getElementById("fileList");
+//     const items = document.getElementById("fileItems");
+//     const count = document.getElementById("fileCount");
+
+//     if (!pdf || !dropZone) return;
+
+//     let selectedFiles = [];
 
 
+//     /* =====================
+//        BUTTON CLICK
+//     ===================== */
+
+//     b1?.addEventListener("click", (e) => {
+//         e.preventDefault();
+//         pdf.value = "";
+//         pdf.click();
+//     });
+
+//     b2?.addEventListener("click", (e) => {
+//         e.preventDefault();
+//         folder.value = "";
+//         folder.click();
+//     });
 
 
+//     /* =====================
+//        INPUT CHANGE
+//     ===================== */
 
+//     pdf?.addEventListener("change", (e) => {
+//         handleFiles(e.target.files);
+//     });
+
+//     folder?.addEventListener("change", (e) => {
+//         handleFiles(e.target.files);
+//     });
+
+
+//     /* =====================
+//        DRAG & DROP
+//     ===================== */
+
+//     dropZone.addEventListener("dragover", (e) => {
+//         e.preventDefault();
+//         dropZone.classList.add("dragover");
+//     });
+
+//     dropZone.addEventListener("dragleave", () => {
+//         dropZone.classList.remove("dragover");
+//     });
+
+//     dropZone.addEventListener("drop", (e) => {
+
+//         e.preventDefault();
+//         dropZone.classList.remove("dragover");
+
+//         handleFiles(e.dataTransfer.files);
+//     });
+
+
+//     /* =====================
+//        MAIN HANDLER
+//     ===================== */
+
+//     function handleFiles(files) {
+
+//         for (let file of files) {
+
+//             if (file.type !== "application/pdf") {
+//                 alert("Only PDF files allowed!");
+//                 continue;
+//             }
+
+//             if (selectedFiles.some(f => f.name === file.name)) {
+//                 continue;
+//             }
+
+//             selectedFiles.push(file);
+//         }
+
+//         updateList();
+//         syncInput();
+//     }
+
+
+//     /* =====================
+//        UPDATE UI
+//     ===================== */
+
+//     function updateList() {
+
+//         items.innerHTML = "";
+
+//         selectedFiles.forEach((file, index) => {
+
+//             const li = document.createElement("li");
+
+//             li.innerHTML = `
+//                 ${file.name}
+//                 <span style="color:red;cursor:pointer"
+//                       data-index="${index}"> ❌ </span>
+//             `;
+
+//             items.appendChild(li);
+//         });
+
+//         count.textContent = selectedFiles.length;
+
+//         list.style.display =
+//             selectedFiles.length ? "block" : "none";
+//     }
+
+
+//     /* =====================
+//        REMOVE FILE
+//     ===================== */
+
+//     items.addEventListener("click", (e) => {
+
+//         if (e.target.dataset.index !== undefined) {
+
+//             selectedFiles.splice(e.target.dataset.index, 1);
+
+//             updateList();
+//             syncInput();
+//         }
+//     });
+
+
+//     /* =====================
+//        SYNC TO INPUT
+//     ===================== */
+
+//     function syncInput() {
+
+//         const dt = new DataTransfer();
+
+//         selectedFiles.forEach(f => dt.items.add(f));
+
+//         pdf.files = dt.files;
+//         folder.files = dt.files;
+//     }
+// }
+
+
+    /* ===============================
+   LOADER
+=============================== */
+
+    function hideLoader() {
+        const l = document.getElementById("ebookLoader");
+        const v = document.getElementById("viewer-wrapper");
+
+        if (l) l.remove();
+
+        if (v) v.classList.add("show");
+    }
+    /* ===============================
+   ORIENTATION AUTO REFRESH
+=============================== */
+
+    let lastOrientation =
+        window.innerWidth > window.innerHeight ? "landscape" : "portrait";
+
+    window.addEventListener("resize", () => {
+        // Only for mobile
+        if (window.innerWidth > 900) return;
+
+        const current =
+            window.innerWidth > window.innerHeight ? "landscape" : "portrait";
+
+        if (current !== lastOrientation) {
+            lastOrientation = current;
+
+            // Small delay for stability
+            // setTimeout(() => {
+            //     location.reload();
+            // }, 300);
+            setTimeout(() => {
+                if (pageFlip) {
+                    pageFlip.update(calculateSize());
+                }
+            }, 300);
+        }
+    });
+    function updateTOCLayout() {
+        const items = document.querySelectorAll("#tocList .toc-item");
+        if (!items.length) return;
+
+        const isMobile = window.innerWidth <= 768;
+        const isPortrait = window.innerHeight > window.innerWidth;
+
+        const singleMode = isMobile && isPortrait;
+
+        let html = "";
+        let i = 0;
+
+        while (i < items.length) {
+            const num = parseInt(items[i].dataset.num);
+            const page = parseInt(items[i].dataset.page);
+
+            /* SINGLE MODE (Mobile Portrait) */
+            if (singleMode || i === 0 || i === items.length - 1) {
+                html += `
+                <div class="toc-item" data-page="${page}">
+                    Page ${String(num).padStart(3, "0")}
+                </div>
+            `;
+
+                i++;
+            } else {
+
+            /* DOUBLE MODE */
+                const num2 = num + 1;
+
+                html += `
+                <div class="toc-item" data-page="${page}">
+                    Page ${String(num).padStart(3, "0")}
+                    -
+                    ${String(num2).padStart(3, "0")}
+                </div>
+            `;
+
+                i += 2;
+            }
+        }
+
+        document.getElementById("tocList").innerHTML = html;
+
+        // Rebind click
+        setupTOC();
+    }
+    
 })();
 /* =====================================
    SHARE LINK (GLOBAL)
 ===================================== */
 function openShareModal(ebookId) {
     fetch(`/ebook/share/${ebookId}`)
-        .then(res => res.json())
-        .then(data => {
+        .then((res) => res.json())
+        .then((data) => {
             document.getElementById("shareLinkInput").value = data.publicLink;
-            new bootstrap.Modal(
-                document.getElementById("shareModal")
-            ).show();
+            new bootstrap.Modal(document.getElementById("shareModal")).show();
         })
         .catch(() => alert("Failed to generate share link"));
 }
@@ -403,35 +717,24 @@ function copyShareLink() {
     document.execCommand("copy");
     alert("Link copied!");
 }
-   
-// let lastOrientation = window.innerWidth > window.innerHeight ? "landscape" : "portrait";
-
-// window.addEventListener("resize", () => {
-//     const currentOrientation =
-//         window.innerWidth > window.innerHeight ? "landscape" : "portrait";
-
-//     if (currentOrientation !== lastOrientation) {
-//         location.reload(); 
-//     }
-// });
-window.addEventListener("orientationchange", () => {
-    setTimeout(() => {
-        applyMode(false);
-        updateSize();
-    }, 400);
-});
-function handleOrientationFix() {
-    const isMobile = window.innerWidth <= 900;
-
-    if (isMobile) {
-        applyMode(false); // always single
-    }
-}
-
-window.addEventListener("orientationchange", () => {
-    setTimeout(handleOrientationFix, 300);
-});
+let lastOrientation =
+    window.innerWidth > window.innerHeight ? "landscape" : "portrait";
 
 window.addEventListener("resize", () => {
-    setTimeout(handleOrientationFix, 300);
+
+    // Only for mobile
+    if (window.innerWidth > 900) return;
+
+    const current =
+        window.innerWidth > window.innerHeight ? "landscape" : "portrait";
+
+    if (current !== lastOrientation) {
+
+        lastOrientation = current;
+
+        // Small delay for stability
+        setTimeout(() => {
+            location.reload();
+        }, 300);
+    }
 });
