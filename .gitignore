@@ -1,8 +1,10 @@
-/mylaravelapp/vendor
-/mylaravelapp/node_modules
-/mylaravelapp/storage
-/importantbackup23jan
-/mylaravelapp/public/ebooks
+mylaravelapp/vendor/
+mylaravelapp/node_modules/
+mylaravelapp/storage/
+
+importantbackup23jan/
+mylaravelapp/public/ebooks/
+
 *.pdf
 *.zip
 .env
